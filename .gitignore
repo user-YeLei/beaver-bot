@@ -31,3 +31,7 @@ htmlcov/
 dist/
 build/
 *.egg-info/
+
+# Environment
+.env
+_minimax_api_key

@@ -17,8 +17,9 @@ class AppConfig(BaseModel):
 
 class ModelConfig(BaseModel):
     provider: str = "openrouter"
-    name: str = "anthropic/claude-3-haiku"
+    name: str = Field(default="anthropic/claude-3-haiku", validation_alias="model")
     api_key: Optional[str] = None
+    api_base: Optional[str] = None
     max_tokens: int = 4096
     temperature: float = 0.7
 
@@ -53,7 +54,7 @@ def load_config(debug: bool = False) -> BeaverConfig:
     # Find config file
     config_paths = [
         Path("config/settings.yaml"),
-        Path(__file__).parent.parent.parent / "config" / "settings.yaml",
+        Path(__file__).parent.parent / "config" / "settings.yaml",
         Path.home() / ".beaver" / "config.yaml",
     ]
 

@@ -27,6 +27,7 @@ class LLMClient:
         self.provider = config.provider
         self.model = config.name
         self.api_key = config.api_key or os.environ.get("ANTHROPIC_API_KEY") or os.environ.get("OPENAI_API_KEY")
+        self.api_base = config.api_base
 
         self._client = None
         self._init_client()
@@ -49,6 +50,8 @@ class LLMClient:
                     base_url="https://api.openrouter.ai/api/v1"
                 )
                 self._call = self._call_openai
+            elif self.provider == "minimax":
+                self._call = self._call_minimax
             else:
                 # Default to OpenRouter
                 from openai import OpenAI
@@ -91,6 +94,45 @@ class LLMClient:
             model=self.model,
             usage={"input_tokens": response.usage.prompt_tokens, "output_tokens": response.usage.completion_tokens}
         )
+
+    def _call_minimax(self, messages: List[Dict], **kwargs) -> LLMResponse:
+        """Call MiniMax API (Anthropic-compatible /messages endpoint)"""
+        base_url = self.api_base or "https://api.minimaxi.com/anthropic/v1/messages"
+
+        import httpx
+
+        with httpx.Client(base_url=base_url.rstrip("/"), timeout=60.0, follow_redirects=True) as client:
+            response = client.post(
+                "",
+                json={
+                    "model": self.model,
+                    "messages": messages,
+                    "max_tokens": kwargs.get("max_tokens", 4096),
+                    "temperature": kwargs.get("temperature", 0.7),
+                },
+                headers={
+                    "Authorization": f"Bearer {self.api_key}",
+                    "Content-Type": "application/json",
+                },
+            )
+            response.raise_for_status()
+            data = response.json()
+
+            content = data.get("content", [])
+            if isinstance(content, list) and len(content) > 0:
+                text_parts = [c.get("text", "") for c in content if c.get("type") == "text"]
+                text = "\n".join(text_parts) if text_parts else str(content)
+            else:
+                text = str(content)
+
+            return LLMResponse(
+                content=text,
+                model=self.model,
+                usage={
+                    "input_tokens": data.get("usage", {}).get("input_tokens", 0),
+                    "output_tokens": data.get("usage", {}).get("output_tokens", 0),
+                },
+            )
 
     def _call_fallback(self, messages: List[Dict], **kwargs) -> LLMResponse:
         """Fallback when no API key is available"""

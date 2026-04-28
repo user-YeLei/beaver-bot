@@ -6,9 +6,10 @@ app:
   debug: false
 
 model:
-  provider: "openrouter"  # openrouter, anthropic, openai
-  model: "anthropic/claude-3-haiku"
-  api_key: "${OPENROUTER_API_KEY}"
+  provider: "minimax"  # openrouter, anthropic, openai, minimax
+  model: "MiniMax-M2.7"
+  api_key: "${MINIMAX_API_KEY}"
+  api_base: "https://api.minimaxi.com/anthropic/v1/messages"
   max_tokens: 4096
   temperature: 0.7
 
