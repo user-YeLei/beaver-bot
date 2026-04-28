@@ -24,18 +24,18 @@ jobs:
         uses: astral-sh/setup-uv@v4
 
       - name: Install dependencies
-        run: uv pip install --python .venv pytest pytest-asyncio
+        run: uv pip install pytest pytest-asyncio
 
-      - name: Install project dependencies
-        run: uv pip install --python .venv -e .
+      - name: Install project
+        run: uv pip install -e .
 
       - name: Run tests
-        run: |
-          source .venv/bin/activate
-          PYTHONPATH=src pytest tests/ -v
+        run: pytest tests/ -v
+        env:
+          PYTHONPATH: src
 
   lint:
-    name: Lint & Type Check
+    name: Lint
     runs-on: ubuntu-latest
 
     steps:
@@ -51,12 +51,10 @@ jobs:
         uses: astral-sh/setup-uv@v4
 
       - name: Install ruff
-        run: uv pip install --python .venv ruff
+        run: uv pip install ruff
 
       - name: Run ruff
-        run: |
-          source .venv/bin/activate
-          ruff check src/
+        run: ruff check src/
 
   build:
     name: Build Package
@@ -75,13 +73,10 @@ jobs:
         uses: astral-sh/setup-uv@v4
 
       - name: Install build
-        run: uv pip install --python .venv build
+        run: uv pip install build
 
       - name: Build package
-        run: |
-          source .venv/bin/activate
-          python -m build
-        shell: bash
+        run: python -m build
 
       - name: Upload dist
         uses: actions/upload-artifact@v4
