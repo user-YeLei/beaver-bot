@@ -4,7 +4,7 @@
 
 | Date | Changes Made | Impact |
 |------|--------------|--------|
-| (empty - first run) | - | - |
+| 2026-04-28 | Fixed FileTool path security to use configurable root_path | Fixed 3 failing tests, all 37 passing |
 
 ## Strategy Notes
 - Focus on small, incremental improvements

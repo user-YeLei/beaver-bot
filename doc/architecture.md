@@ -250,3 +250,33 @@ github_operation →  github_tool.py
 - **Phase 2**: 接入飞书/微信 Webhook，支持群聊对话
 - **Phase 3**: 支持定时任务、CI/CD 触发、自定义工作流
 - **扩展工具**: 数据库工具、API 测试工具、Docker 工具
+
+---
+
+## 十二、当前状态 (2026-04-28)
+
+| 项目 | 状态 |
+|------|------|
+| **测试** | 37 tests passing |
+| **LLM** | MiniMax-M2.7 (api.minimaxi.com/anthropic/v1/messages) |
+| **CI/CD** | GitHub Actions ✓ |
+| **代码质量** | Self-evolution cron (每日 09:00) |
+
+### 模块清单
+
+| 模块 | 文件 | 说明 |
+|------|------|------|
+| Intent Parser | `src/beaver_bot/core/intent_parser.py` | 用户意图识别 |
+| Task Planner | `src/beaver_bot/core/task_planner.py` | 任务分解 |
+| LLM Client | `src/beaver_bot/core/llm_client.py` | MiniMax/Anthropic/OpenAI |
+| File Tool | `src/beaver_bot/tools/file_tool.py` | 文件操作 |
+| GitHub Tool | `src/beaver_bot/tools/github_tool.py` | GitHub API |
+| Code Review | `src/beaver_bot/tools/code_review.py` | 代码审查 |
+| Debugger | `src/beaver_bot/tools/debugger.py` | 错误调试 |
+| Terminal | `src/beaver_bot/tools/terminal_tool.py` | 命令执行 |
+
+### 自我进化
+
+- 定时任务: 每日 09:00
+- 日志: `.evolution/log.md`
+- 原则: 小步快跑，不破坏测试

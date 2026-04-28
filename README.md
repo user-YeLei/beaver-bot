@@ -61,3 +61,19 @@ beaver-bot/
 | `/exit` | 退出 |
 | `/model` | 查看当前模型 |
 | `/clear` | 清屏 |
+
+## 测试状态
+
+- **37 tests** - 全部通过
+- 运行测试: `PYTHONPATH=src pytest tests/ -v`
+
+## 技术栈
+
+- **LLM**: MiniMax-M2.7 (api.minimaxi.com)
+- **Python**: 3.11+
+- **测试**: pytest + pytest-asyncio
+- **CI/CD**: GitHub Actions
+
+## 更新日志
+
+- **2026-04-28**: Week 3 - 集成测试 + MiniMax LLM 支持
