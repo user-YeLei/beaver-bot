@@ -53,6 +53,28 @@ def handle_command(cmd: str, config: BeaverConfig, agent: BeaverAgent) -> bool:
         console.print(result)
         return True
 
+    elif cmd.startswith("/browse "):
+        from beaver_bot.tools.browser_tool import BrowserTool
+        url = cmd.split(" ", 1)[1].strip()
+        if not url.startswith("http"):
+            url = "https://" + url
+        bt = BrowserTool()
+        result = bt.open(url)
+        console.print(f"[green]已打开:[/green] {url}")
+        console.print(result)
+        return True
+
+    elif cmd == "/screenshot":
+        from beaver_bot.tools.browser_tool import BrowserTool
+        import tempfile
+        bt = BrowserTool()
+        bt.open("https://example.com")
+        ss_path = tempfile.mktemp(suffix=".png")
+        result = bt.screenshot(ss_path, full=True)
+        console.print(f"[green]{result}[/green]")
+        console.print(f"路径: {ss_path}")
+        return True
+
     else:
         console.print(f"[red]未知命令:[/red] {cmd}")
         console.print("输入 [green]/help[/green] 查看可用命令")
@@ -75,6 +97,8 @@ def print_help() -> None:
 | `/status` | 显示状态 |
 | `/debug` | 切换调试模式 |
 | `/analyze` | 分析代码仓库结构 |
+| `/browse <url>` | 打开网页并获取内容 |
+| `/screenshot` | 截取当前页面截图 |
 
 ## 功能
 - **代码生成**: 描述你想要的功能，我帮你写代码
