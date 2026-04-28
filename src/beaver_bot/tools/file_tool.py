@@ -27,7 +27,8 @@ class FileTool:
 
             # Security: prevent path traversal
             try:
-                path.resolve().relative_to(Path.cwd())
+                root = self.config.file_tool.root_path
+                path.resolve().relative_to(root)
             except ValueError:
                 return "Access denied: path is outside current directory"
 

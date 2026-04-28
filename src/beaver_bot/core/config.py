@@ -40,12 +40,18 @@ class LoggingConfig(BaseModel):
     format: str = "json"
 
 
+class FileToolConfig(BaseModel):
+    """Configuration for file tool security settings"""
+    root_path: Path = Field(default_factory=Path.cwd)
+
+
 class BeaverConfig(BaseModel):
     app: AppConfig = Field(default_factory=AppConfig)
     model: ModelConfig = Field(default_factory=ModelConfig)
     github: GitHubConfig = Field(default_factory=GitHubConfig)
     cli: CLIConfig = Field(default_factory=CLIConfig)
     logging: LoggingConfig = Field(default_factory=LoggingConfig)
+    file_tool: FileToolConfig = Field(default_factory=FileToolConfig)
 
 
 def load_config(debug: bool = False) -> BeaverConfig:

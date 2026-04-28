@@ -6,12 +6,15 @@ import os
 from pathlib import Path
 
 from beaver_bot.tools.file_tool import FileTool
-from beaver_bot.core.config import BeaverConfig, AppConfig
+from beaver_bot.core.config import BeaverConfig, AppConfig, FileToolConfig
 
 
 @pytest.fixture
 def config():
-    return BeaverConfig(app=AppConfig(debug=True))
+    return BeaverConfig(
+        app=AppConfig(debug=True),
+        file_tool=FileToolConfig(root_path=Path("/"))  # Allow temp files in tests
+    )
 
 
 @pytest.fixture
