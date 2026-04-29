@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Optional
 
 import yaml
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from pydantic_settings import BaseSettings
 
 
@@ -45,6 +45,31 @@ class FileToolConfig(BaseModel):
     root_path: Path = Field(default_factory=Path.cwd)
 
 
+class MCPServerConfig(BaseModel):
+    """Configuration for a single MCP server"""
+    command: Optional[str] = None
+    args: list = Field(default_factory=list)
+    env: dict = Field(default_factory=dict)
+    url: Optional[str] = None
+    headers: dict = Field(default_factory=dict)
+    timeout: int = 120
+    connect_timeout: int = 60
+
+
+class MCPConfig(BaseModel):
+    """Configuration for MCP servers"""
+    servers: dict[str, MCPServerConfig] = Field(default_factory=dict)
+
+    # Support both "servers" (model) and "mcp_servers" (YAML key) names
+    model_config = {"populate_by_name": True}
+
+    @field_validator("servers", mode="before")
+    @classmethod
+    def handle_mcp_servers_key(cls, v, info):
+        # If servers is empty but we got a dict via mcp_servers alias, use that
+        return v
+
+
 class BeaverConfig(BaseModel):
     app: AppConfig = Field(default_factory=AppConfig)
     model: ModelConfig = Field(default_factory=ModelConfig)
@@ -52,6 +77,7 @@ class BeaverConfig(BaseModel):
     cli: CLIConfig = Field(default_factory=CLIConfig)
     logging: LoggingConfig = Field(default_factory=LoggingConfig)
     file_tool: FileToolConfig = Field(default_factory=FileToolConfig)
+    mcp: MCPConfig = Field(default_factory=MCPConfig)
 
 
 def load_config(debug: bool = False) -> BeaverConfig:
@@ -70,6 +96,10 @@ def load_config(debug: bool = False) -> BeaverConfig:
             with open(path) as f:
                 config_data = yaml.safe_load(f) or {}
             break
+
+    # Handle mcp_servers key from YAML (rename to "servers" for Pydantic)
+    if "mcp_servers" in config_data and isinstance(config_data["mcp_servers"], dict):
+        config_data["mcp"] = {"servers": config_data["mcp_servers"]}
 
     # Override with environment variables
     config_data["model"]["api_key"] = os.environ.get(
