@@ -15,7 +15,7 @@ model:
 
 github:
   token: "${GITHUB_TOKEN}"
-  owner: "user-YeLei"
+  owner: "4th-engineer"
   repo: "beaver-bot"
 
 cli:

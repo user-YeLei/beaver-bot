@@ -10,6 +10,57 @@ Beaver Bot is an intelligent coding assistant that combines LLM-powered code gen
 
 ---
 
+## 🚀 One-Command Installation
+
+```bash
+git clone https://github.com/4th-engineer/beaver-bot.git
+cd beaver-bot
+make install
+```
+
+Then edit `.env` with your API keys and run:
+
+```bash
+make run
+```
+
+That's it.
+
+---
+
+## 💡 Quick Start
+
+```bash
+# 编辑配置文件
+nano .env
+
+# 运行交互式 CLI
+make run
+
+# 或者单次查询
+make query ARGS='-q "写一个快排算法"'
+```
+
+---
+
+## 🛠️ Developer Commands
+
+All commands use `make`:
+
+| Command | Description |
+|---------|-------------|
+| `make install` | Install dependencies (creates venv) |
+| `make install-dev` | Install with dev tools (pytest, ruff, mypy) |
+| `make run` | Start interactive CLI |
+| `make test` | Run all tests |
+| `make lint` | Run ruff linter |
+| `make fmt` | Format code with ruff |
+| `make type-check` | Run mypy type checking |
+| `make coverage` | Generate coverage report |
+| `make clean` | Clean cache and build artifacts |
+
+---
+
 ## ✨ Features
 
 ### 🤖 Core Capabilities
@@ -40,35 +91,6 @@ Beaver Bot runs a daily improvement cycle at 09:00. It:
 
 ---
 
-## 🚀 Quick Start
-
-```bash
-# Clone the repo
-git clone https://github.com/4th-engineer/beaver-bot.git
-cd beaver-bot
-
-# Set up environment
-python -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-
-# Configure (copy and edit)
-cp config/settings.yaml.example config/settings.yaml
-# Add your MINIMAX_API_KEY and GITHUB_TOKEN
-
-# Run
-export PYTHONPATH=src
-beaver run
-```
-
-### Single Query Mode
-
-```bash
-PYTHONPATH=src beaver chat -q "帮我写一个快排算法"
-```
-
----
-
 ## 📁 Project Structure
 
 ```
@@ -81,110 +103,60 @@ beaver-bot/
 │   │   ├── tool_router.py        # Tool dispatch
 │   │   ├── skill_manager.py      # Skill loading & invocation
 │   │   ├── mcp_manager.py        # MCP server management
-│   │   ├── llm_client.py         # MiniMax / Anthropic / OpenAI
+│   │   ├── llm_client.py          # MiniMax / Anthropic / OpenAI
 │   │   ├── conversation_logger.py # Debug logs for user-LLM interactions
 │   │   └── memory/
-│   │       ├── session.py        # Per-session context
-│   │       └── persistent.py     # Cross-session knowledge
+│   │       ├── session.py         # Per-session context
+│   │       └── persistent.py    # Cross-session knowledge
 │   ├── tools/
 │   │   ├── code_gen.py           # Code generation from descriptions
 │   │   ├── code_review.py        # PR/代码审查
 │   │   ├── debugger.py           # 错误分析与修复
-│   │   ├── github_tool.py        # GitHub API 封装
+│   │   ├── github_tool.py         # GitHub API 封装
 │   │   ├── browser_tool.py       # 网页浏览与搜索
 │   │   ├── file_tool.py          # 文件操作 (安全沙箱)
-│   │   └── terminal_tool.py      # 命令执行 (sandboxed)
+│   │   └── terminal_tool.py       # 命令执行 (sandboxed)
 │   └── cli/
-│       ├── interactive.py        # REPL 交互界面
-│       └── commands.py           # /help /exit /model 等内置命令
+│       ├── interactive.py         # REPL 交互界面
+│       └── commands.py            # /help /exit /model 等内置命令
 ├── skills/                        # 👤 User-extensible skills
-│   ├── hello-world/              # Skill example
-│   ├── project-analyzer/        # Codebase analysis skill
-│   └── mcp-config/              # Auto-configure MCP servers
+│   ├── hello-world/
+│   ├── project-analyzer/
+│   └── mcp-config/
 ├── mcp_configs/                   # 👤 MCP server configurations
-│   ├── example-filesystem.yaml
-│   └── example-time.yaml
-├── logs/                         # Conversation & debug logs
-├── tests/                        # 66 tests
+├── logs/                          # Conversation & debug logs
+├── scripts/
+│   └── install.sh                 # 一键安装脚本
+├── tests/                         # 66 tests
 └── doc/
-    ├── architecture.md          # Full architecture docs
-    └── evolution.md             # Self-evolution changelog
-```
-
----
-
-## 🛠️ Usage Examples
-
-### Code Generation
-
-```
-You: 写一个 Python 装饰器来缓存函数结果，带过期时间
-Beaver: [生成代码...]
-✅ 已创建 cache_decorator.py
-
-def memoize(ttl_seconds=300):
-    """带过期时间的 LRU 缓存装饰器"""
-    cache = {}
-    ...
-```
-
-### Code Review
-
-```
-You: review /home/user/project/main.py
-Beaver: [分析中...]
-✅ 读取文件 (45行)
-
-📝 审查结果:
-1. [警告] 第23行: 缺少空值检查
-2. [建议] 第31行: 可用列表推导式优化
-3. [优化] 第38-42行: 循环可并行化
-```
-
-### Skill Extension
-
-Skills are triggered by keywords and can provide templates, multi-step workflows, and specialized prompts.
-
-```
-You: 我想配置一个 MCP 服务器
-Beaver: [触发 mcp-config skill]
-✅ 检测到 MCP 配置请求
-📋 可用模板: GitHub, Filesystem, Time, Brave Search, Slack
+    ├── architecture.md            # Full architecture docs
+    └── evolution.md               # Self-evolution changelog
 ```
 
 ---
 
 ## ⚙️ Configuration
 
-```yaml
-# config/settings.yaml
-llm:
-  provider: minimax
-  model: MiniMax-M2.7
-  base_url: https://api.minimaxi.com/anthropic/v1/messages
-  api_key: ${MINIMAX_API_KEY}
+Edit `.env`:
 
-github:
-  token: ${GITHUB_TOKEN}
+```bash
+# Required
+MINIMAX_API_KEY=your_minimax_api_key_here
+GITHUB_TOKEN=your_github_token_here
 
-tools:
-  allowed_commands:
-    - pip install
-    - pytest
-    - git
-  sandbox_root: /home/agentuser
-
-logging:
-  level: INFO
-  conversation_logs: logs/
+# Optional: Alternative LLM providers
+# OPENAI_API_KEY=your_openai_api_key_here
+# ANTHROPIC_API_KEY=your_anthropic_api_key_here
 ```
+
+Or edit `config/settings.yaml` directly.
 
 ---
 
 ## 🧪 Test Suite
 
 ```bash
-PYTHONPATH=src pytest tests/ -v
+make test
 ```
 
 | Category | Tests | Status |
@@ -218,12 +190,10 @@ Beaver Bot is designed to improve itself continuously:
 
 - **[Architecture](doc/architecture.md)** — Full system design, component diagrams, data flow
 - **[Evolution Log](doc/evolution.md)** — Track all self-improvements
-- **[Skills Guide](skills/)** — How to create custom skills
-- **[MCP Config Guide](mcp_configs/)** — How to configure MCP servers
 
 ---
 
-## �tech Stack
+## 🏗️ Tech Stack
 
 | Layer | Technology |
 |-------|------------|
@@ -232,7 +202,8 @@ Beaver Bot is designed to improve itself continuously:
 | **Agent** | Custom async orchestration |
 | **Config** | Pydantic + YAML |
 | **Testing** | pytest + pytest-asyncio |
-| **CI** | GitHub Actions (optional) |
+| **Linting** | ruff |
+| **Type Check** | mypy |
 
 ---
 
