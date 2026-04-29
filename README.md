@@ -6,75 +6,47 @@
 [![Python](https://img.shields.io/badge/python-3.11+-blue)](https://python.org)
 [![License](https://img.shields.io/badge/license-MIT-yellow)](LICENSE)
 
-Beaver Bot is an intelligent coding assistant that combines LLM-powered code generation, review, and debugging with a unique **self-evolution** capability — it continuously improves itself on a schedule, learning from your projects and workflows.
-
 ---
 
-## 🚀 One-Command Installation
+## 🚀 Quick Start
 
 ```bash
 git clone https://github.com/4th-engineer/beaver-bot.git
 cd beaver-bot
-make install
-```
-
-Then edit `.env` with your API keys and run:
-
-```bash
+make init
+# 编辑 .env 填入 API Key
 make run
-```
-
-That's it.
-
----
-
-## 💡 Quick Start
-
-```bash
-# 编辑配置文件
-nano .env
-
-# 运行交互式 CLI
-make run
-
-# 或者单次查询
-make query ARGS='-q "写一个快排算法"'
 ```
 
 ---
 
-## 🛠️ Developer Commands
-
-All commands use `make`:
+## 📋 Commands
 
 | Command | Description |
 |---------|-------------|
-| `make install` | Install dependencies (creates venv) |
-| `make install-dev` | Install with dev tools (pytest, ruff, mypy) |
-| `make run` | Start interactive CLI |
-| `make test` | Run all tests |
-| `make lint` | Run ruff linter |
-| `make fmt` | Format code with ruff |
-| `make type-check` | Run mypy type checking |
-| `make coverage` | Generate coverage report |
-| `make clean` | Clean cache and build artifacts |
+| `make init` | 首次设置（安装依赖 + 创建 .env） |
+| `make install` | 安装依赖 |
+| `make run` | 启动交互式 CLI |
+| `make run ARGS='-q "问题"'` | 单次查询 |
+| `make test` | 运行测试 |
+| `make lint` | 代码检查 |
+| `make fmt` | 格式化代码 |
+| `make type-check` | 类型检查 |
+| `make doctor` | 环境检查 |
+| `make clean` | 清理缓存 |
 
 ---
 
-## 🐍 Alternative: Python Module Mode
+## ⚙️ Configuration
 
-If you prefer not to install `beaver` as a command, you can run directly with Python:
+创建 `config/settings.yaml` 或复制 `.env.example` 为 `.env`，填入：
 
 ```bash
-# Activate venv
-source .venv/bin/activate
-
-# Run (no need to export API keys — .env is loaded automatically)
-PYTHONPATH=src python -m beaver_bot.main run
-
-# Or single query
-PYTHONPATH=src python -m beaver_bot.main chat -q "写一个快排"
+MINIMAX_API_KEY=your_key_here
+GITHUB_TOKEN=your_token_here
 ```
+
+.env 文件会被自动加载。
 
 ---
 
@@ -84,27 +56,27 @@ PYTHONPATH=src python -m beaver_bot.main chat -q "写一个快排"
 
 | Feature | Description |
 |---------|-------------|
-| **Code Generation** | Describe what you need, get production-ready code in Python, JavaScript, Go, Rust, and more |
-| **Code Review** | AI-powered PR review with inline suggestions and quality analysis |
-| **Debug Assistant** | Paste error messages, get root cause analysis and fix recommendations |
-| **GitHub Integration** | Manage repos, issues, and pull requests directly from conversation |
-| **Web Research** | Search the web, fetch documentation, extract technical information |
+| **Code Generation** | 描述需求 → 生成代码（Python, JS, Go, Rust 等） |
+| **Code Review** | AI 代码审查，inline 建议 |
+| **Debug Assistant** | 错误分析 + 修复建议 |
+| **GitHub Integration** | 管理仓库、Issue、PR |
+| **Web Research** | 网页搜索、文档抓取 |
 
 ### 🔧 Extensible Architecture
 
-| Extension Point | How It Works |
-|----------------|-------------|
-| **Skills** (`skills/`) | Drop-in skill modules with trigger keywords, templates, and step-by-step instructions |
-| **MCP Servers** (`mcp_configs/`) | Configure Model Context Protocol servers via YAML — Beaver auto-connects them |
-| **Tools** (`src/tools/`) | Modular tool system — each tool is self-contained with its own prompts |
+| Extension | 说明 |
+|-----------|------|
+| **Skills** (`skills/`) | 可插拔技能模块，关键词触发 |
+| **MCP Servers** (`mcp_configs/`) | YAML 配置 MCP 服务器 |
+| **Tools** (`src/tools/`) | 模块化工具系统 |
 
 ### 🦫 Self-Evolution
 
-Beaver Bot runs a daily improvement cycle at 09:00. It:
-1. Analyzes recent conversations and identifies patterns
-2. Cleans up TODOs and improves generated code quality
-3. Updates its own skills and documentation
-4. Logs all changes to `doc/evolution.md`
+每日 09:00 自动运行改进周期：
+1. 分析对话模式，识别改进点
+2. 清理 TODO，优化生成代码质量
+3. 更新 skills 和文档
+4. 所有变更记录到 `doc/evolution.md`
 
 ---
 
@@ -114,59 +86,28 @@ Beaver Bot runs a daily improvement cycle at 09:00. It:
 beaver-bot/
 ├── src/beaver_bot/
 │   ├── core/
-│   │   ├── agent.py              # Agent orchestration loop
-│   │   ├── intent_parser.py      # Intent recognition & routing
-│   │   ├── task_planner.py       # Task decomposition
-│   │   ├── tool_router.py        # Tool dispatch
-│   │   ├── skill_manager.py      # Skill loading & invocation
-│   │   ├── mcp_manager.py        # MCP server management
-│   │   ├── llm_client.py          # MiniMax / Anthropic / OpenAI
-│   │   ├── conversation_logger.py # Debug logs for user-LLM interactions
-│   │   └── memory/
-│   │       ├── session.py         # Per-session context
-│   │       └── persistent.py    # Cross-session knowledge
+│   │   ├── agent.py              # Agent 主循环
+│   │   ├── intent_parser.py     # 意图识别
+│   │   ├── task_planner.py       # 任务规划
+│   │   ├── tool_router.py        # 工具路由
+│   │   ├── skill_manager.py      # Skill 管理
+│   │   ├── mcp_manager.py       # MCP 服务器管理
+│   │   ├── llm_client.py         # LLM 客户端
+│   │   └── conversation_logger.py # 调试日志
 │   ├── tools/
-│   │   ├── code_gen.py           # Code generation from descriptions
-│   │   ├── code_review.py        # PR/代码审查
-│   │   ├── debugger.py           # 错误分析与修复
-│   │   ├── github_tool.py         # GitHub API 封装
-│   │   ├── browser_tool.py       # 网页浏览与搜索
-│   │   ├── file_tool.py          # 文件操作 (安全沙箱)
-│   │   └── terminal_tool.py       # 命令执行 (sandboxed)
+│   │   ├── code_gen.py, code_review.py, debugger.py
+│   │   ├── github_tool.py, browser_tool.py
+│   │   ├── file_tool.py, terminal_tool.py
 │   └── cli/
-│       ├── interactive.py         # REPL 交互界面
-│       └── commands.py            # /help /exit /model 等内置命令
-├── skills/                        # 👤 User-extensible skills
-│   ├── hello-world/
-│   ├── project-analyzer/
-│   └── mcp-config/
-├── mcp_configs/                   # 👤 MCP server configurations
-├── logs/                          # Conversation & debug logs
-├── scripts/
-│   └── install.sh                 # 一键安装脚本
-├── tests/                         # 66 tests
+│       ├── interactive.py, commands.py
+├── skills/                      # 用户可扩展 skills
+├── mcp_configs/                  # 用户可配置 MCP
+├── logs/                         # 对话日志
+├── tests/                        # 66 tests
 └── doc/
-    ├── architecture.md            # Full architecture docs
-    └── evolution.md               # Self-evolution changelog
+    ├── architecture.md           # 架构文档
+    └── evolution.md             # 自我进化日志
 ```
-
----
-
-## ⚙️ Configuration
-
-Edit `.env`:
-
-```bash
-# Required
-MINIMAX_API_KEY=your_minimax_api_key_here
-GITHUB_TOKEN=your_github_token_here
-
-# Optional: Alternative LLM providers
-# OPENAI_API_KEY=your_openai_api_key_here
-# ANTHROPIC_API_KEY=your_anthropic_api_key_here
-```
-
-Or edit `config/settings.yaml` directly.
 
 ---
 
@@ -176,37 +117,12 @@ Or edit `config/settings.yaml` directly.
 make test
 ```
 
-| Category | Tests | Status |
-|----------|-------|--------|
-| Core (agent, intent, planner, router) | 20 | ✅ |
-| Tools (code_gen, file, terminal, github) | 18 | ✅ |
-| Skills & MCP | 12 | ✅ |
-| Memory & Logging | 16 | ✅ |
-| **Total** | **66** | **✅** |
-
----
-
-## 🦫 Self-Evolution
-
-Beaver Bot is designed to improve itself continuously:
-
-- **Cron Schedule**: Daily at 09:00
-- **Evolution Log**: `doc/evolution.md`
-- **Principle**: Small, incremental changes — never break tests
-
-| Date | Improvement |
-|------|-------------|
-| 2026-04-28 | Fixed path security in FileTool |
-| 2026-04-29 | Added extensible skill system |
-| 2026-04-29 | Added MCP server auto-configuration |
-| 2026-04-29 | Added conversation logger for debugging |
-
 ---
 
 ## 📚 Documentation
 
-- **[Architecture](doc/architecture.md)** — Full system design, component diagrams, data flow
-- **[Evolution Log](doc/evolution.md)** — Track all self-improvements
+- **[Architecture](doc/architecture.md)** — 系统架构详解
+- **[Evolution Log](doc/evolution.md)** — 自我进化记录
 
 ---
 
@@ -217,39 +133,13 @@ Beaver Bot is designed to improve itself continuously:
 | **Language** | Python 3.11+ |
 | **LLM** | MiniMax-M2.7 (Anthropic-compatible API) |
 | **Agent** | Custom async orchestration |
-| **Config** | Pydantic + YAML |
+| **Config** | Pydantic + YAML + python-dotenv |
 | **Testing** | pytest + pytest-asyncio |
 | **Linting** | ruff |
 | **Type Check** | mypy |
 
 ---
 
-## 🔧 Manual Installation
-
-```bash
-# Clone and enter
-git clone https://github.com/4th-engineer/beaver-bot.git
-cd beaver-bot
-
-# Create venv and install
-python3 -m venv .venv
-source .venv/bin/activate
-pip install --upgrade pip
-pip install -r requirements.txt
-pip install -e .   # Install beaver command
-
-# Configure (environment variables are loaded automatically)
-cp .env.example .env
-# Edit .env with your MINIMAX_API_KEY and GITHUB_TOKEN
-
-# Run
-beaver run
-```
-
-> 💡 `.env` 文件会被自动加载，无需手动 `source .env`
-
----
-
 ## 📄 License
 
-MIT License — see [LICENSE](LICENSE) for details.
+MIT License

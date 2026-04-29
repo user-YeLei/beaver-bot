@@ -1,96 +1,114 @@
-.PHONY: help install test lint fmt run clean run-test install-dev
+.PHONY: help install init run test lint fmt type-check clean doctor
 
 # 自动检测项目根目录
 SCRIPT_DIR := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 PROJECT_ROOT := $(SCRIPT_DIR)
 export PYTHONPATH := $(PROJECT_ROOT)/src
 
-# 帮助信息
+PYTHON := $(PROJECT_ROOT)/.venv/bin/python
+PIP := $(PROJECT_ROOT)/.venv/bin/pip
+
+# 默认目标
 help:
-	@echo "🦫 Beaver Bot - 开发者命令"
+	@echo "🦫 Beaver Bot"
 	@echo ""
-	@echo "📦 安装相关"
-	@echo "  make install          安装依赖 (创建 venv + pip install)"
-	@echo "  make install-dev     安装开发依赖 (含 pytest, ruff)"
+	@echo "  make init        首次安装 (创建 .env, 安装依赖)"
+	@echo "  make install     安装依赖"
+	@echo "  make run         运行 CLI"
+	@echo "  make test        运行测试"
+	@echo "  make lint        代码检查"
+	@echo "  make fmt         格式化代码"
+	@echo "  make type-check  类型检查"
+	@echo "  make doctor      环境检查"
+	@echo "  make clean       清理缓存"
 	@echo ""
-	@echo "🚀 运行"
-	@echo "  make run             运行交互式 CLI"
-	@echo "  make query ARGS='-q \"问题\"'  单次查询模式"
-	@echo ""
-	@echo "🧪 测试"
-	@echo "  make test            运行所有测试"
-	@echo "  make coverage        生成覆盖率报告"
-	@echo ""
-	@echo "🔍 代码质量"
-	@echo "  make lint            运行 ruff 检查"
-	@echo "  make fmt             自动格式化代码"
-	@echo "  make type-check      运行 mypy 类型检查"
-	@echo ""
-	@echo "🧹 清理"
-	@echo "  make clean           清理缓存和构建产物"
-	@echo ""
+	@echo "  make dev         快速开发 (安装 + 测试)"
 
-# 安装依赖
+# ── 安装 ─────────────────────────────────────────────
+
 install:
-	@cd $(PROJECT_ROOT) && \
-	if [ ! -d ".venv" ]; then python3 -m venv .venv; fi && \
-	.venv/bin/pip install --upgrade pip && \
-	.venv/bin/pip install -r requirements.txt
+	@echo "📦 安装依赖..."
+	@if [ ! -f "$(PROJECT_ROOT)/pyproject.toml" ]; then \
+		echo "❌ pyproject.toml not found"; exit 1; \
+	fi
+	@if [ ! -d "$(PROJECT_ROOT)/.venv" ]; then \
+		echo "  创建虚拟环境..."; \
+		python3 -m venv .venv; \
+	fi
+	@$(PIP) install --upgrade pip
+	@$(PIP) install -e .
 
-# 安装开发依赖
-install-dev:
-	@cd $(PROJECT_ROOT) && \
-	if [ ! -d ".venv" ]; then python3 -m venv .venv; fi && \
-	.venv/bin/pip install --upgrade pip && \
-	.venv/bin/pip install -r requirements.txt && \
-	.venv/bin/pip install pytest pytest-asyncio pytest-cov ruff mypy pre-commit
+# 首次设置
+init: install
+	@if [ ! -f "$(PROJECT_ROOT)/.env" ]; then \
+		echo "⚙️  创建 .env 配置文件..."; \
+		cp .env.example .env; \
+		echo ""; \
+		echo "⚠️  请编辑 .env 填入你的 API Key:"; \
+		echo "   nano .env"; \
+	else \
+		echo "✅ .env 已存在"; \
+	fi
+	@$(PYTHON) -c "import beaver_bot" 2>/dev/null || { \
+		echo ""; \
+		echo "❌ 安装失败，请检查错误信息"; \
+		exit 1; \
+	}
+	@echo "✅ 安装完成"
 
-# 运行 CLI
+# ── 运行 ─────────────────────────────────────────────
+
 run:
-	@cd $(PROJECT_ROOT) && \
-	.venv/bin/python -m beaver_bot.main run $(ARGS)
+	@$(PYTHON) -m beaver_bot.main run $(ARGS)
 
-# 运行单次查询
-query:
-	@cd $(PROJECT_ROOT) && \
-	.venv/bin/python -m beaver_bot.main chat $(ARGS)
+# ── 测试 ─────────────────────────────────────────────
 
-# 运行测试
 test:
-	@cd $(PROJECT_ROOT) && \
-	PYTHONPATH=src .venv/bin/python -m pytest tests/ -v --ignore=tests/test_cli.py
+	@$(PYTHON) -m pytest tests/ -v --ignore=tests/test_cli.py
 
-# 覆盖率报告
-coverage:
-	@cd $(PROJECT_ROOT) && \
-	PYTHONPATH=src .venv/bin/python -m pytest tests/ --ignore=tests/test_cli.py --cov=beaver_bot --cov-report=term-missing --cov-report=html
+# ── 代码质量 ─────────────────────────────────────────
 
-# Lint
 lint:
-	@cd $(PROJECT_ROOT) && \
-	.venv/bin/ruff check src/
+	@$(PYTHON) -m ruff check src/
 
-# 格式化
 fmt:
-	@cd $(PROJECT_ROOT) && \
-	.venv/bin/ruff format src/ tests/
+	@$(PYTHON) -m ruff format src/ tests/
 
-# 类型检查
 type-check:
-	@cd $(PROJECT_ROOT) && \
-	.venv/bin/mypy src/
+	@$(PYTHON) -m mypy src/
 
-# 清理
+# ── 环境检查 ─────────────────────────────────────────
+
+doctor:
+	@echo "🔍 环境检查..."
+	@echo ""
+	@echo "Python:"
+	@$(PYTHON) --version
+	@echo ""
+	@echo "已安装的包:"
+	@$(PIP) list --format=freeze | grep -E "^(typer|rich|pydantic|pytest)" || true
+	@echo ""
+	@echo "配置文件:"
+	@[ -f .env ] && echo "  ✅ .env 存在" || echo "  ⚠️  .env 不存在 (make init)"
+	@[ -f config/settings.yaml ] && echo "  ✅ config/settings.yaml 存在" || echo "  ❌ config/settings.yaml 不存在"
+	@echo ""
+	@echo "API Key 检查:"
+	@grep -q "MINIMAX_API_KEY=your" .env 2>/dev/null && echo "  ⚠️  请编辑 .env 填入真实 API Key" || \
+		grep -q "MINIMAX_API_KEY=" .env && echo "  ✅ MINIMAX_API_KEY 已配置" || echo "  ⚠️  MINIMAX_API_KEY 未设置"
+
+# ── 清理 ─────────────────────────────────────────────
+
 clean:
-	@cd $(PROJECT_ROOT) && \
-	echo "🧹 清理缓存..." && \
-	find . -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true && \
-	find . -type d -name .pytest_cache -exec rm -rf {} + 2>/dev/null || true && \
-	find . -type d -name .mypy_cache -exec rm -rf {} + 2>/dev/null || true && \
-	find . -type d -name .ruff_cache -exec rm -rf {} + 2>/dev/null || true && \
-	rm -rf build/ dist/ *.egg-info .coverage htmlcov/ .venv/ && \
-	echo "✅ 清理完成"
+	@echo "🧹 清理缓存..."
+	@find . -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true
+	@find . -type d -name .pytest_cache -exec rm -rf {} + 2>/dev/null || true
+	@find . -type d -name .mypy_cache -exec rm -rf {} + 2>/dev/null || true
+	@find . -type d -name .ruff_cache -exec rm -rf {} + 2>/dev/null || true
+	@find . -type d -name "*.egg-info" -exec rm -rf {} + 2>/dev/null || true
+	@rm -rf build/ dist/ .coverage htmlcov/
+	@echo "✅ 清理完成"
 
-# 一键开发环境
-dev: install-dev test
+# ── 快速开发 ─────────────────────────────────────────
+
+dev: install test
 	@echo "✅ 开发环境就绪"
