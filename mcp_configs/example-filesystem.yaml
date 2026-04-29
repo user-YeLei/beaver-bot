@@ -1,0 +1,13 @@
+# MCP Server Configuration
+# Place this file in the mcp_configs/ directory
+# The filename (without .yaml) becomes the server name
+
+command: "npx"
+args:
+  - "-y"
+  - "@modelcontextprotocol/server-filesystem"
+  - "/tmp"
+
+# Optional: environment variables (only these are passed to the subprocess)
+# env:
+#   SOME_API_KEY: "your-key-here"

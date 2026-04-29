@@ -1,0 +1,7 @@
+# MCP Server Configuration
+# Place this file in the mcp_configs/ directory
+# The filename (without .yaml) becomes the server name
+
+command: "uvx"
+args:
+  - "mcp-server-time"

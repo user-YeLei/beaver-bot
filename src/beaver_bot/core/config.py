@@ -97,10 +97,6 @@ def load_config(debug: bool = False) -> BeaverConfig:
                 config_data = yaml.safe_load(f) or {}
             break
 
-    # Handle mcp_servers key from YAML (rename to "servers" for Pydantic)
-    if "mcp_servers" in config_data and isinstance(config_data["mcp_servers"], dict):
-        config_data["mcp"] = {"servers": config_data["mcp_servers"]}
-
     # Override with environment variables
     config_data["model"]["api_key"] = os.environ.get(
         "OPENROUTER_API_KEY",

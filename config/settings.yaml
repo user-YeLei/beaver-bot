@@ -34,15 +34,3 @@ cli:
 logging:
   level: "INFO"
   format: "json"
-
-# MCP Servers Configuration
-# Users can add their own MCP servers here
-# Example:
-# mcp_servers:
-#   time:
-#     command: "uvx"
-#     args: ["mcp-server-time"]
-#   filesystem:
-#     command: "npx"
-#     args: ["-y", "@modelcontextprotocol/server-filesystem", "/tmp"]
-mcp_servers: {}

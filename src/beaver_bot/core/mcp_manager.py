@@ -3,6 +3,7 @@
 import asyncio
 import json
 import re
+from pathlib import Path
 from typing import Any, Optional
 
 import structlog
@@ -47,14 +48,27 @@ class MCPManager:
     Supports both stdio (command-based) and HTTP (url-based) transports.
     """
 
-    def __init__(self, config: BeaverConfig):
+    def __init__(self, config: BeaverConfig, mcp_configs_dir: str = None):
         self.config = config
+        self.config_root = config.model_fields['mcp'].default if hasattr(config, 'mcp') else None
+        self._mcp_configs_dir = mcp_configs_dir
         self._servers: dict[str, Any] = {}  # server_name -> process or connection
         self._tools: dict[str, MCPTool] = {}  # full_tool_name -> MCPTool
         self._server_processes: dict[str, asyncio.subprocess.Process] = {}
 
     async def initialize(self) -> None:
         """Initialize all configured MCP servers"""
+        # Load MCP configs from mcp_configs/ directory
+        project_root = Path(__file__).parent.parent.parent
+        mcp_configs_path = project_root / "mcp_configs"
+
+        if not hasattr(self.config, 'mcp') or not self.config.mcp:
+            from beaver_bot.core.config import MCPConfig
+            self.config.mcp = MCPConfig()
+
+        if mcp_configs_path.exists() and mcp_configs_path.is_dir():
+            self._load_configs_from_directory(mcp_configs_path)
+
         mcp_config = self.config.mcp
         if not mcp_config or not mcp_config.servers:
             logger.info("no_mcp_servers_configured")
@@ -66,6 +80,23 @@ class MCPManager:
             except Exception as e:
                 logger.error("mcp_server_connect_failed",
                            server=server_name, error=str(e))
+
+    def _load_configs_from_directory(self, configs_path: Path) -> None:
+        """Load all MCP server configs from a directory of YAML files"""
+        import yaml
+
+        for config_file in configs_path.glob("*.yaml"):
+            try:
+                server_name = config_file.stem  # filename without extension
+                with open(config_file) as f:
+                    server_data = yaml.safe_load(f) or {}
+
+                server_config = MCPServerConfig(**server_data)
+                self.config.mcp.servers[server_name] = server_config
+                logger.debug("mcp_config_loaded", server=server_name, file=str(config_file))
+            except Exception as e:
+                logger.warning("mcp_config_load_failed",
+                             file=str(config_file), error=str(e))
 
     async def _connect_server(self, server_name: str,
                              server_config: MCPServerConfig) -> None:

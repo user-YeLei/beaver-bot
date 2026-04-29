@@ -7,6 +7,7 @@
 | 2026-04-28 | Fixed FileTool path security to use configurable root_path | Fixed 3 failing tests, all 37 passing |
 | 2026-04-29 | Added docstrings to TerminalTool.get_error_log and run_tests | Improved code documentation, 37 tests passing |
 || 2026-04-29 | Added skill system - SkillManager, IntentParser skill routing, 2 sample skills | 46 tests passing, user can now add custom skills |
+|| 2026-04-29 | Added MCP system - MCPManager, MCPServerConfig, MCPConfig | 57 tests passing, users can add MCP servers to config |
 
 ## Strategy Notes
 - Focus on small, incremental improvements
