@@ -130,14 +130,23 @@ def show_status(agent: BeaverAgent) -> None:
 
 
 def chat_command(config: BeaverConfig, query: str) -> None:
-    """Single query mode"""
+    """Execute a single chat query and exit.
+    
+    Args:
+        config: The Beaver configuration object
+        query: The user's query string to process
+    """
     agent = BeaverAgent(config)
     response = agent.run(query)
     console.print(response)
 
 
 def model_command(show: bool) -> None:
-    """Model info command"""
+    """Display or manage the current LLM model.
+    
+    Args:
+        show: If True, display current model information
+    """
     config = load_config()
     if show:
         show_model_info(config)
