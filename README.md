@@ -61,6 +61,36 @@ All commands use `make`:
 
 ---
 
+## 🐍 Alternative: Python Module Mode
+
+If you prefer not to install `beaver` as a command, you can run directly with Python:
+
+```bash
+# Activate venv
+source .venv/bin/activate
+
+# Configure
+export MINIMAX_API_KEY=your_key_here
+export GITHUB_TOKEN=your_token_here
+
+# Run interactive CLI
+PYTHONPATH=src python -m beaver_bot.main run
+
+# Or single query
+PYTHONPATH=src python -m beaver_bot.main chat -q "写一个快排"
+```
+
+Or use the project's configured environment:
+
+```bash
+source .venv/bin/activate
+source .env    # Load API keys
+export PYTHONPATH=src
+python -m beaver_bot.main run
+```
+
+---
+
 ## ✨ Features
 
 ### 🤖 Core Capabilities
