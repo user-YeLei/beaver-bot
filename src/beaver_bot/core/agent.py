@@ -12,6 +12,7 @@ from beaver_bot.core.task_planner import TaskPlanner
 from beaver_bot.core.tool_router import ToolRouter
 from beaver_bot.core.memory.session import SessionMemory
 from beaver_bot.core.conversation_logger import ConversationLogger
+from beaver_bot.core.data_store import init_data_store
 
 logger = structlog.get_logger()
 
@@ -21,6 +22,17 @@ class BeaverAgent:
 
     def __init__(self, config: BeaverConfig):
         self.config = config
+        
+        # Initialize data store and run migrations BEFORE other init
+        try:
+            self.data_store = init_data_store()
+            logger.info("data_store_initialized", 
+                       version=self.data_store.get_version().raw,
+                       stats=self.data_store.get_stats())
+        except Exception as e:
+            logger.error("data_store_init_failed", error=str(e))
+            raise
+        
         self.session_id = str(uuid.uuid4())[:8]
         self.memory = SessionMemory()
         self.intent_parser = IntentParser()

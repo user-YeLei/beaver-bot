@@ -115,29 +115,77 @@ class Skill:
 
 
 class SkillManager:
-    """Manages skill loading, discovery, and execution"""
+    """
+    Manages skill loading, discovery, and execution.
+    
+    Supports user/system skill separation:
+    - data/skills/builtin/  → System skills (overwritten on upgrade)
+    - data/skills/user/      → User skills (preserved on upgrade)
+    
+    User skills take priority over builtin skills with the same name.
+    """
 
     SKILL_FILE = "SKILL.md"
-    DEFAULT_SKILLS_DIR = "skills"
 
-    def __init__(self, project_root: Path, skills_dir: str = None):
+    def __init__(self, project_root: Path, skills_dirs: Dict[str, Path] = None):
         self.project_root = project_root
-        self.skills_dir = Path(skills_dir) if skills_dir else project_root / self.DEFAULT_SKILLS_DIR
         self._skills: Dict[str, Skill] = {}
+        
+        # Default: check new data/ location, fall back to legacy skills/
+        if skills_dirs:
+            self.skills_dirs = skills_dirs
+        else:
+            data_dir = project_root / "data"
+            self.skills_dirs = {
+                "builtin": data_dir / "skills" / "builtin",
+                "user": data_dir / "skills" / "user",
+            }
+        
         self._load_skills()
 
     def _load_skills(self) -> None:
-        """Discover and load all skills from the skills directory"""
-        if not self.skills_dir.exists():
-            logger.warning("skills_dir_not_found", path=str(self.skills_dir))
-            return
-
-        for skill_path in self.skills_dir.rglob(self.SKILL_FILE):
-            skill = self._parse_skill_file(skill_path)
-            if skill:
-                self._skills[skill.name] = skill
-                logger.info("skill_loaded", name=skill.name, category=skill.category,
-                           structured=skill.is_structured)
+        """Discover and load all skills from skills directories.
+        
+        Loads in order: builtin first, then user.
+        User skills with same name override builtin skills.
+        """
+        loaded = set()
+        
+        # Load builtin skills first
+        builtin_dir = self.skills_dirs.get("builtin")
+        if builtin_dir and builtin_dir.exists():
+            for skill_path in builtin_dir.rglob(self.SKILL_FILE):
+                skill = self._parse_skill_file(skill_path)
+                if skill:
+                    self._skills[skill.name] = skill
+                    loaded.add(skill.name)
+                    logger.info("skill_loaded", name=skill.name, 
+                               source="builtin", structured=skill.is_structured)
+        
+        # Load user skills (can override builtin)
+        user_dir = self.skills_dirs.get("user")
+        if user_dir and user_dir.exists():
+            for skill_path in user_dir.rglob(self.SKILL_FILE):
+                skill = self._parse_skill_file(skill_path)
+                if skill:
+                    # User skill overrides builtin if same name
+                    is_override = skill.name in loaded
+                    self._skills[skill.name] = skill
+                    loaded.add(skill.name)
+                    logger.info("skill_loaded", name=skill.name,
+                               source="user" if is_override else "user_new",
+                               structured=skill.is_structured)
+        
+        # Also check legacy skills/ directory for backward compatibility
+        legacy_dir = self.project_root / "skills"
+        if legacy_dir.exists():
+            for skill_path in legacy_dir.rglob(self.SKILL_FILE):
+                skill = self._parse_skill_file(skill_path)
+                if skill and skill.name not in loaded:
+                    self._skills[skill.name] = skill
+                    loaded.add(skill.name)
+                    logger.info("skill_loaded", name=skill.name,
+                               source="legacy", structured=skill.is_structured)
 
         logger.info("skills_loaded_total", count=len(self._skills))
 
