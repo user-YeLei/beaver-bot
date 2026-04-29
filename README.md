@@ -69,24 +69,11 @@ If you prefer not to install `beaver` as a command, you can run directly with Py
 # Activate venv
 source .venv/bin/activate
 
-# Configure
-export MINIMAX_API_KEY=your_key_here
-export GITHUB_TOKEN=your_token_here
-
-# Run interactive CLI
+# Run (no need to export API keys — .env is loaded automatically)
 PYTHONPATH=src python -m beaver_bot.main run
 
 # Or single query
 PYTHONPATH=src python -m beaver_bot.main chat -q "写一个快排"
-```
-
-Or use the project's configured environment:
-
-```bash
-source .venv/bin/activate
-source .env    # Load API keys
-export PYTHONPATH=src
-python -m beaver_bot.main run
 ```
 
 ---
@@ -251,13 +238,15 @@ pip install --upgrade pip
 pip install -r requirements.txt
 pip install -e .   # Install beaver command
 
-# Configure
+# Configure (environment variables are loaded automatically)
 cp .env.example .env
 # Edit .env with your MINIMAX_API_KEY and GITHUB_TOKEN
 
 # Run
 beaver run
 ```
+
+> 💡 `.env` 文件会被自动加载，无需手动 `source .env`
 
 ---
 

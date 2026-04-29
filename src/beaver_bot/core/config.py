@@ -7,6 +7,7 @@ from typing import Optional
 import yaml
 from pydantic import BaseModel, Field, field_validator
 from pydantic_settings import BaseSettings
+from dotenv import load_dotenv
 
 
 class AppConfig(BaseModel):
@@ -83,7 +84,14 @@ class BeaverConfig(BaseModel):
 def load_config(debug: bool = False) -> BeaverConfig:
     """Load configuration from settings.yaml and environment variables"""
 
-    # Find config file
+    # Find project root and load .env automatically
+    project_root = Path(__file__).parent.parent.parent
+    env_path = project_root / ".env"
+    if env_path.exists():
+        load_dotenv(env_path)
+    else:
+        # Try current directory as well
+        load_dotenv()
     config_paths = [
         Path("config/settings.yaml"),
         Path(__file__).parent.parent / "config" / "settings.yaml",
