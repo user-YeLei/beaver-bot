@@ -207,6 +207,30 @@ Beaver Bot is designed to improve itself continuously:
 
 ---
 
+## 🔧 Manual Installation
+
+```bash
+# Clone and enter
+git clone https://github.com/4th-engineer/beaver-bot.git
+cd beaver-bot
+
+# Create venv and install
+python3 -m venv .venv
+source .venv/bin/activate
+pip install --upgrade pip
+pip install -r requirements.txt
+pip install -e .   # Install beaver command
+
+# Configure
+cp .env.example .env
+# Edit .env with your MINIMAX_API_KEY and GITHUB_TOKEN
+
+# Run
+beaver run
+```
+
+---
+
 ## 📄 License
 
 MIT License — see [LICENSE](LICENSE) for details.
