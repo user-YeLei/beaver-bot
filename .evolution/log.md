@@ -11,6 +11,7 @@
 | 2026-04-29 | Added docstrings to CLI commands | 66 tests passing |
 | 2026-04-30 | Added docstring to MCPTool.to_dict() | 70 tests passing |
 | 2026-04-30 | Fixed code_gen.py complete_code - partial_code was never passed to LLM prompt template | 70 tests passing |
+| 2026-04-30 16:00 | Added docstrings to MCPManager.__init__ and class-level docstring | 70 tests passing |
 
 ## Current Stage
 - 70 tests passing
