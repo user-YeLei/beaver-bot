@@ -44,6 +44,12 @@ class CodeReviewTool:
     """Tool for code review using LLM"""
 
     def __init__(self, config, llm_client):
+        """Initialize CodeReviewTool.
+
+        Args:
+            config: Application configuration object containing LLM settings.
+            llm_client: LLM client instance for performing deep code reviews.
+        """
         self.config = config
         self.llm = llm_client
 
