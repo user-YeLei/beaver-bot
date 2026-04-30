@@ -19,8 +19,20 @@ class BrowserResult:
     error: Optional[str] = None
 
 
+def _validate_browser_binary() -> Optional[str]:
+    """Check if agent-browser binary exists. Returns error message if not."""
+    if not Path(AGENT_BROWSER_BIN).exists():
+        return (
+            f"agent-browser not found at {AGENT_BROWSER_BIN}. "
+            "Install with: npm install -g @agent-browser/cli"
+        )
+    return None
+
+
 def _run_browser_cmd(cmd: str, timeout: int = 30) -> BrowserResult:
     """Run agent-browser command and return result"""
+    if error := _validate_browser_binary():
+        return BrowserResult(success=False, error=error)
     try:
         result = subprocess.run(
             f"{AGENT_BROWSER_BIN} {cmd}",
