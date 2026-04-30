@@ -13,7 +13,8 @@
 | 2026-04-30 | Fixed code_gen.py complete_code - partial_code was never passed to LLM prompt template | 70 tests passing |
 | 2026-04-30 17:00 | Added error handling to GitHubTool - safe attribute access in __init__, config checks before API calls | 70 tests passing |
 | 2026-04-30 18:00 | Added docstring to DebuggerTool.__init__ | 70 tests passing |
-| 2026-04-30 19:00 | Added logging and improved docstrings to CodeGenTool.complete_code and refactor methods | 70 tests passing |
+| 2026-04-30 20:00 | beaver-agent | Added error handling to LLMClient._call_minimax | 70 tests passing |
+| 2026-04-30 19:00 | beaver-agent | Added logging and improved docstrings to CodeGenTool.complete_code and refactor methods | 70 tests passing |
 
 ## Current Stage
 - 70 tests passing
