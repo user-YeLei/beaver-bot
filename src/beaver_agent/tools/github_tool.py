@@ -12,9 +12,13 @@ class GitHubTool:
 
     def __init__(self, config):
         self.config = config
-        self.token = config.github.token
-        self.owner = config.github.owner
-        self.repo = config.github.repo
+        self.token = getattr(config.github, "token", None) if hasattr(config, "github") else None
+        self.owner = getattr(config.github, "owner", None) if hasattr(config, "github") else None
+        self.repo = getattr(config.github, "repo", None) if hasattr(config, "github") else None
+
+    def _check_config(self) -> bool:
+        """Check if GitHub config is properly set"""
+        return bool(self.token and self.owner and self.repo)
 
     def operate(
         self,
@@ -52,6 +56,9 @@ class GitHubTool:
 
     def get_repo_info(self, owner: str, repo: str) -> str:
         """Get repository information"""
+        if not self._check_config():
+            return "❌ GitHub token not configured. Set github.token in config."
+
         try:
             import requests
 
@@ -86,6 +93,9 @@ class GitHubTool:
 
     def create_issue(self, owner: str, repo: str, title: str, body: str = "") -> str:
         """Create a new issue"""
+        if not self._check_config():
+            return "❌ GitHub token not configured. Set github.token in config."
+
         try:
             import requests
 
@@ -113,6 +123,9 @@ class GitHubTool:
 
     def list_issues(self, owner: str, repo: str, state: str = "open") -> str:
         """List issues"""
+        if not self._check_config():
+            return "❌ GitHub token not configured. Set github.token in config."
+
         try:
             import requests
 
@@ -142,6 +155,9 @@ class GitHubTool:
 
     def get_issue(self, owner: str, repo: str, number: int) -> str:
         """Get a specific issue"""
+        if not self._check_config():
+            return "❌ GitHub token not configured. Set github.token in config."
+
         try:
             import requests
 
@@ -184,6 +200,9 @@ class GitHubTool:
         base: str = "main"
     ) -> str:
         """Create a pull request"""
+        if not self._check_config():
+            return "❌ GitHub token not configured. Set github.token in config."
+
         try:
             import requests
 
