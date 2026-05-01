@@ -76,7 +76,23 @@ class MCPManager:
         self._server_processes: dict[str, asyncio.subprocess.Process] = {}
 
     async def initialize(self) -> None:
-        """Initialize all configured MCP servers"""
+        """Initialize all configured MCP servers.
+
+        Loads MCP server configurations from the project's mcp_configs/
+        directory (YAML files), then establishes connections to each
+        configured server via the appropriate transport (HTTP or stdio).
+        Discovered tools from each server are registered for later use.
+
+        Args:
+            No explicit args (uses self.config and project mcp_configs/).
+
+        Returns:
+            None. Server connections are stored in self._server_processes
+            and tools in self._tools.
+
+        Raises:
+            RuntimeError: If a server has neither url nor command configured.
+        """
         # Load MCP configs from mcp_configs/ directory
         project_root = Path(__file__).parent.parent.parent
         mcp_configs_path = project_root / "mcp_configs"
