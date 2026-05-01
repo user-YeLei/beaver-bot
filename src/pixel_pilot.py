@@ -32,11 +32,21 @@ from threading import Lock
 from urllib import request, error
 from typing import Optional, Dict, Any
 
+try:
+    import structlog
+    _has_structlog = True
+except ImportError:
+    _has_structlog = False
+
 # 全局状态
 _enabled = False
 _viewer_url = "http://localhost:7777"
 _initialized = False
 _lock = Lock()
+
+# PixelPilot logger — only active if structlog is available
+if _has_structlog:
+    _logger = structlog.get_logger("pixel_pilot")
 
 # 工具名映射（tool_name + action -> 人类可读名称）
 TOOL_ACTION_MAP = {
@@ -72,7 +82,10 @@ def connect(url: str = "http://localhost:7777", verbose: bool = True) -> None:
     _viewer_url = url.rstrip("/")
 
     if verbose:
-        print(f"[PixelPilot] Connecting to {_viewer_url}...")
+        if _has_structlog:
+            _logger.info("connecting", url=_viewer_url)
+        else:
+            print(f"[PixelPilot] Connecting to {_viewer_url}...")
 
     # 测试连接
     if _test_connection():
@@ -80,17 +93,26 @@ def connect(url: str = "http://localhost:7777", verbose: bool = True) -> None:
         _initialized = True
         _patch_tool_router()
         if verbose:
-            print(f"[PixelPilot] ✅ Connected! Events will be streamed automatically.")
+            if _has_structlog:
+                _logger.info("connected", url=_viewer_url)
+            else:
+                print(f"[PixelPilot] ✅ Connected! Events will be streamed automatically.")
     else:
         if verbose:
-            print(f"[PixelPilot] ⚠️  Server not reachable, events will be queued locally.")
+            if _has_structlog:
+                _logger.warning("server_not_reachable", url=_viewer_url)
+            else:
+                print(f"[PixelPilot] ⚠️  Server not reachable, events will be queued locally.")
 
 
 def disconnect() -> None:
     """断开连接，停止事件追踪"""
     global _enabled
     _enabled = False
-    print("[PixelPilot] Disconnected.")
+    if _has_structlog:
+        _logger.info("disconnected")
+    else:
+        print("[PixelPilot] Disconnected.")
 
 
 def send(
@@ -263,9 +285,18 @@ def _patch_tool_router() -> None:
         ToolRouter._pixel_patched = True
 
         if _enabled:
-            print("[PixelPilot] 🔌 ToolRouter patched - all tool calls will be tracked")
+            if _has_structlog:
+                _logger.info("toolrouter_patched")
+            else:
+                print("[PixelPilot] 🔌 ToolRouter patched - all tool calls will be tracked")
 
     except ImportError as e:
-        print(f"[PixelPilot] Warning: Could not patch ToolRouter: {e}")
+        if _has_structlog:
+            _logger.warning("could_not_patch_toolrouter", error=str(e))
+        else:
+            print(f"[PixelPilot] Warning: Could not patch ToolRouter: {e}")
     except Exception as e:
-        print(f"[PixelPilot] Warning: Patching failed: {e}")
+        if _has_structlog:
+            _logger.warning("patching_failed", error=str(e))
+        else:
+            print(f"[PixelPilot] Warning: Patching failed: {e}")
