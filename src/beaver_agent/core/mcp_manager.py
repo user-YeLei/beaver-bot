@@ -229,7 +229,19 @@ class MCPManager:
 
     async def _send_notification(self, server_name: str,
                                 method: str, params: dict) -> None:
-        """Send a JSON-RPC notification (no id) to the server"""
+        """Send a JSON-RPC notification (no id) to the server.
+
+        Notifications are one-way messages that do not expect a response.
+        Used for server->client events or fire-and-forget requests.
+
+        Args:
+            server_name: Name of the connected MCP server.
+            method: JSON-RPC method name (e.g., ``"notifications/event"``).
+            params: Dict of method parameters.
+
+        Raises:
+            RuntimeError: If the server is not connected.
+        """
         process = self._server_processes.get(server_name)
         if not process:
             raise RuntimeError(f"Server {server_name} not connected")
@@ -293,7 +305,30 @@ class MCPManager:
 
     async def call_tool(self, server_name: str,
                         tool_name: str, arguments: dict) -> dict:
-        """Call a tool on an MCP server"""
+        """Call a tool on an MCP server and return the result.
+
+        Sends a JSON-RPC tools/call request to the specified MCP server,
+        waits for the response, and returns a standardized result dict.
+
+        Args:
+            server_name: Name of the connected MCP server.
+            tool_name: Name of the tool to call (as exposed by the server).
+            arguments: Dict of keyword arguments to pass to the tool.
+
+        Returns:
+            A dict with ``success`` (bool) and either ``result`` (on success)
+            or ``error`` (on failure). Example success::
+
+                {"success": True, "result": {"output": "..."}}
+
+            Example error::
+
+                {"success": False, "error": {"code": -32600, "message": "..."}}
+
+        Raises:
+            RuntimeError: If the server is not connected.
+            JSONDecodeError: If the server returns malformed JSON.
+        """
         request = {
             "jsonrpc": "2.0",
             "id": 3,
