@@ -11,74 +11,78 @@ console = Console()
 
 def handle_command(cmd: str, config: BeaverConfig, agent: BeaverAgent) -> bool:
     """Handle built-in slash commands. Returns False if should exit."""
+    from pathlib import Path
+    from beaver_agent.tools.browser_tool import BrowserTool
+    from beaver_agent.tools.code_analyzer import analyze_repository
+    import tempfile
 
     cmd = cmd.strip().lower()
 
+    # Exit commands
     if cmd in ("/exit", "/quit", "/q"):
         console.print("[blue]下次见! 👋[/blue]")
         return False
 
-    elif cmd in ("/help", "/h", "?"):
+    # Help
+    if cmd in ("/help", "/h", "?"):
         print_help()
         return True
 
-    elif cmd in ("/clear", "/reset"):
+    # Clear screen
+    if cmd in ("/clear", "/reset"):
         console.clear()
         return True
 
-    elif cmd == "/model":
+    # Model info
+    if cmd == "/model":
         show_model_info(config)
         return True
 
-    elif cmd == "/status":
+    # Status
+    if cmd == "/status":
         show_status(agent)
         return True
 
-    elif cmd.startswith("/model "):
-        new_model = cmd.split(" ", 1)[1].strip()
-        config.model.name = new_model
-        console.print(f"[green]模型已切换为:[/green] {new_model}")
+    # Switch model
+    if cmd.startswith("/model "):
+        config.model.name = cmd.split(" ", 1)[1].strip()
+        console.print(f"[green]模型已切换为:[/green] {config.model.name}")
         return True
 
-    elif cmd == "/debug":
+    # Debug toggle
+    if cmd == "/debug":
         config.app.debug = not config.app.debug
         console.print(f"[yellow]调试模式:[/yellow] {'开启' if config.app.debug else '关闭'}")
         return True
 
-    elif cmd == "/analyze":
-        from beaver_agent.tools.code_analyzer import analyze_repository
-        from pathlib import Path
-        root = Path(__file__).parent.parent.parent.parent
-        result = analyze_repository(str(root))
+    # Analyze repository
+    if cmd == "/analyze":
+        result = analyze_repository(str(Path(__file__).parent.parent.parent.parent))
         console.print(result)
         return True
 
-    elif cmd.startswith("/browse "):
-        from beaver_agent.tools.browser_tool import BrowserTool
+    # Browse URL
+    if cmd.startswith("/browse "):
         url = cmd.split(" ", 1)[1].strip()
         if not url.startswith("http"):
             url = "https://" + url
         bt = BrowserTool()
         result = bt.open(url)
-        console.print(f"[green]已打开:[/green] {url}")
-        console.print(result)
+        console.print(f"[green]已打开:[/green] {url}\n{result}")
         return True
 
-    elif cmd == "/screenshot":
-        from beaver_agent.tools.browser_tool import BrowserTool
-        import tempfile
+    # Screenshot
+    if cmd == "/screenshot":
         bt = BrowserTool()
         bt.open("https://example.com")
         ss_path = tempfile.mktemp(suffix=".png")
         result = bt.screenshot(ss_path, full=True)
-        console.print(f"[green]{result}[/green]")
-        console.print(f"路径: {ss_path}")
+        console.print(f"[green]{result}[/green]\n路径: {ss_path}")
         return True
 
-    else:
-        console.print(f"[red]未知命令:[/red] {cmd}")
-        console.print("输入 [green]/help[/green] 查看可用命令")
-        return True
+    # Unknown command
+    console.print(f"[red]未知命令:[/red] {cmd}\n输入 [green]/help[/green] 查看可用命令")
+    return True
 
 
 def print_help() -> None:

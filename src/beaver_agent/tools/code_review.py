@@ -81,7 +81,19 @@ class CodeReviewTool:
             return f"❌ Code review failed: {e}"
 
     def _basic_review(self, code: str, language: str, file_path: Optional[str]) -> str:
-        """Basic static analysis without LLM"""
+        """Perform basic static analysis when LLM is unavailable.
+
+        Runs language-specific and generic static checks to identify common code issues
+        like TODO comments, bare except clauses, mutable defaults, long lines, etc.
+
+        Args:
+            code: Source code to analyze.
+            language: Programming language hint (python, javascript, etc.).
+            file_path: Optional file path for context in the report.
+
+        Returns:
+            A formatted string containing the review findings or a clean bill of health.
+        """
 
         issues = []
         lines = code.split("\n")
@@ -122,7 +134,17 @@ class CodeReviewTool:
         return "\n".join(result)
 
     def _check_python_issues(self, lines: List[str]) -> List[CodeReviewIssue]:
-        """Check for common Python issues"""
+        """Check Python source code for common issues.
+
+        Detects: TODO/FIXME comments, bare except clauses, print statements,
+        and mutable default arguments.
+
+        Args:
+            lines: Source code split into individual lines.
+
+        Returns:
+            A list of CodeReviewIssue objects representing detected problems.
+        """
         issues = []
 
         for i, line in enumerate(lines, 1):
@@ -167,7 +189,16 @@ class CodeReviewTool:
         return issues
 
     def _check_js_issues(self, lines: List[str]) -> List[CodeReviewIssue]:
-        """Check for common JavaScript issues"""
+        """Check JavaScript/TypeScript source code for common issues.
+
+        Detects: console.log statements and var declarations (prefer let/const).
+
+        Args:
+            lines: Source code split into individual lines.
+
+        Returns:
+            A list of CodeReviewIssue objects representing detected problems.
+        """
         issues = []
 
         for i, line in enumerate(lines, 1):
@@ -194,7 +225,16 @@ class CodeReviewTool:
         return issues
 
     def _check_generic_issues(self, lines: List[str]) -> List[CodeReviewIssue]:
-        """Generic issue checks for any language"""
+        """Check source code for generic (language-agnostic) issues.
+
+        Detects: lines exceeding 120 characters and trailing whitespace.
+
+        Args:
+            lines: Source code split into individual lines.
+
+        Returns:
+            A list of CodeReviewIssue objects representing detected problems.
+        """
         issues = []
 
         for i, line in enumerate(lines, 1):
@@ -221,7 +261,15 @@ class CodeReviewTool:
         return issues
 
     def _format_review_response(self, llm_response: str, file_path: Optional[str]) -> str:
-        """Format LLM review response"""
+        """Format a full LLM-based code review response with header.
+
+        Args:
+            llm_response: The raw response content from the LLM.
+            file_path: Optional file path to include in the report header.
+
+        Returns:
+            A fully formatted review report with header and LLM content.
+        """
 
         header = f"""## 🔍 代码审查
 
