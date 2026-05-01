@@ -77,6 +77,9 @@ class TerminalTool:
         Searches standard system log locations and filters for error/exception
         entries. Useful for debugging and diagnosing issues.
 
+        Platform-aware: detects Linux, macOS, or Windows and searches
+        the appropriate log locations for each.
+
         Args:
             lines: Maximum number of recent lines to retrieve (default: 50)
 
@@ -84,32 +87,99 @@ class TerminalTool:
             A string containing recent error log entries, or a message
             indicating no errors were found or no log files exist.
         """
-        try:
-            # Try common log locations
+        import platform
+        import os
+
+        system = platform.system().lower()
+
+        # Platform-specific log locations
+        if system == "darwin":
+            # macOS
+            log_files = [
+                "/var/log/system.log",
+                "~/Library/Logs/",
+                "~/Library/Logs/CoreCapture/",
+            ]
+        elif system == "linux":
+            # Linux
             log_files = [
                 "/var/log/syslog",
                 "/var/log/messages",
                 "~/.local/share/Logs",
             ]
+        elif system == "windows":
+            # Windows PowerShell event log
+            log_files = []
+        else:
+            log_files = []
 
+        # For Windows, fall back to PowerShell Get-WinEvent
+        if system == "windows":
+            try:
+                result = subprocess.run(
+                    ["powershell", "-Command",
+                     "Get-WinEvent -LogName System -MaxEvents 50 | "
+                     "Where-Object {$_.LevelDisplayName -eq 'Error'} | "
+                     "Format-List TimeCreated,Message"],
+                    capture_output=True,
+                    text=True,
+                    timeout=10,
+                )
+                if result.stdout:
+                    return result.stdout
+                return "No Windows System log errors found"
+            except Exception as e:
+                return f"Error reading Windows log: {e}"
+
+        # Linux / macOS / other Unix
+        try:
             for log_file in log_files:
-                import os
                 path = os.path.expanduser(log_file)
-                if os.path.exists(path):
-                    with open(path, "r") as f:
-                        all_lines = f.readlines()
-                        recent = all_lines[-lines:] if len(all_lines) > lines else all_lines
-                        # Filter for error lines
-                        errors = [l for l in recent if "error" in l.lower() or "exception" in l.lower()]
-                        if errors:
-                            return "".join(errors)
-                    return f"No errors found in {path}"
+
+                # Handle directory targets (macOS ~/Library/Logs/)
+                if os.path.isdir(path):
+                    try:
+                        log_files_in_dir = sorted(
+                            [os.path.join(path, f) for f in os.listdir(path)
+                             if f.endswith(".log") or "error" in f.lower()],
+                            key=os.path.getmtime,
+                            reverse=True,
+                        )[:3]
+                        for lf in log_files_in_dir:
+                            errors = self._read_error_lines(lf, lines)
+                            if errors:
+                                return errors
+                    except PermissionError:
+                        continue
+                    continue
+
+                if os.path.exists(path) and os.path.isfile(path):
+                    errors = self._read_error_lines(path, lines)
+                    if errors:
+                        return errors
 
             return "No log files found"
 
         except Exception as e:
             logger.warning("error_log_read_failed", error=str(e))
             return f"Error reading log: {e}"
+
+    def _read_error_lines(self, path: str, lines: int) -> str:
+        """Read and filter error lines from a log file."""
+        import os
+        try:
+            with open(path, "r", encoding="utf-8", errors="replace") as f:
+                all_lines = f.readlines()
+            recent = all_lines[-lines:] if len(all_lines) > lines else all_lines
+            errors = [
+                l for l in recent
+                if "error" in l.lower() or "exception" in l.lower() or "fail" in l.lower()
+            ]
+            if errors:
+                return f"=== {path} ===\n" + "".join(errors)
+            return ""
+        except PermissionError:
+            return ""
 
     def run_tests(self, test_command: Optional[str] = None) -> str:
         """Run tests using auto-detected test framework.
