@@ -110,6 +110,7 @@ Description: {description}
             response = self.llm.chat(prompt_text)
             return response.content
         except Exception as e:
+            logger.error("code_completion_failed", error=str(e))
             return f"❌ Code completion failed: {e}"
 
     def refactor(
@@ -131,4 +132,5 @@ Description: {description}
             response = self.llm.chat(prompt)
             return response.content
         except Exception as e:
+            logger.error("code_refactor_failed", error=str(e))
             return f"❌ Refactoring failed: {e}"
