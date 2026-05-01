@@ -165,6 +165,8 @@ def _test_connection() -> bool:
         with request.urlopen(req, timeout=2) as resp:
             return resp.status == 200
     except Exception:
+        if _has_structlog:
+            _logger.warning("connection_test_failed", url=_viewer_url)
         return False
 
 
@@ -183,8 +185,12 @@ def _post_event(event: Dict[str, Any]) -> bool:
         with request.urlopen(req, timeout=2) as resp:
             return resp.status == 200
     except error.URLError:
+        if _has_structlog:
+            _logger.warning("post_event_url_error", url=_viewer_url)
         return False
     except Exception:
+        if _has_structlog:
+            _logger.warning("post_event_failed", url=_viewer_url, event_type=event.get("type"))
         return False
 
 
@@ -194,6 +200,8 @@ def _get_agent_name(self) -> str:
         app = getattr(getattr(self, "config", None), "app", None)
         return getattr(app, "name", "beaver") if app else "beaver"
     except Exception:
+        if _has_structlog:
+            _logger.warning("get_agent_name_failed", error=str(e))
         return "beaver"
 
 
