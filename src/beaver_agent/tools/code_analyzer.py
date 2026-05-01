@@ -1,10 +1,13 @@
 """Code Analyzer Tool - Analyze repository structure and generate dependency graph"""
 
-import os
 import re
 from pathlib import Path
 from typing import Dict, List, Set, Tuple, Optional
 from dataclasses import dataclass, field
+
+import structlog
+
+logger = structlog.get_logger()
 
 
 @dataclass
@@ -49,12 +52,14 @@ class CodeAnalyzer:
         """Scan and analyze all Python files"""
         src_path = self.root_path / "src" / "beaver_agent"
         if not src_path.exists():
-            print(f"Warning: {src_path} does not exist")
+            logger.warning("code_analyzer_src_path_not_found", path=str(src_path))
             return
 
         # Find all Python files
         py_files = list(src_path.rglob("*.py"))
         py_files = [f for f in py_files if "__pycache__" not in str(f)]
+
+        logger.info("code_analyzer_scanning", file_count=len(py_files))
 
         for py_file in py_files:
             self._analyze_file(py_file)
@@ -71,7 +76,7 @@ class CodeAnalyzer:
         try:
             content = path.read_text(encoding="utf-8")
         except Exception as e:
-            print(f"Error reading {path}: {e}")
+            logger.error("code_analyzer_read_error", path=str(path), error=str(e))
             return
 
         lines = content.split("\n")
