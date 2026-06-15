@@ -339,7 +339,7 @@ def _run_self_check(root: Path) -> None:
         if result.returncode == 0:
             # Extract summary
             lines = result.stdout.strip().splitlines()
-            summary = next((l for l in reversed(lines) if "passed" in l or "error" in l), lines[-1] if lines else "unknown")
+            summary = next((line for line in reversed(lines) if "passed" in line or "error" in line), lines[-1] if lines else "unknown")
             console.print(f"  [green]✓[/green] {summary}")
         elif result.returncode == 2:
             console.print("  [red]✗ Test collection failed[/red]")

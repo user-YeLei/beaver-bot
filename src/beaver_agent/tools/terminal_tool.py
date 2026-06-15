@@ -227,9 +227,9 @@ class TerminalTool:
                 all_lines = f.readlines()
             recent = all_lines[-lines:] if len(all_lines) > lines else all_lines
             errors = [
-                l
-                for l in recent
-                if "error" in l.lower() or "exception" in l.lower() or "fail" in l.lower()
+                line
+                for line in recent
+                if "error" in line.lower() or "exception" in line.lower() or "fail" in line.lower()
             ]
             if errors:
                 return f"=== {path} ===\n" + "".join(errors)

@@ -15,11 +15,11 @@ class FakeLogger:
     def warning(self, *a, **kw): pass
     def error(self, *a, **kw): pass
 
-import structlog
+import structlog  # noqa: E402
 
 structlog.get_logger = lambda: FakeLogger()
 
-from beaver_agent.core.multi_agent import (
+from beaver_agent.core.multi_agent import (  # noqa: E402
     EventBus,
     Inbox,
     Task,

@@ -260,7 +260,7 @@ class GitHubTool:
 
             if response.status_code == 200:
                 issue = response.json()
-                labels = ", ".join([l.get("name") for l in issue.get("labels", [])])
+                labels = ", ".join([label.get("name") for label in issue.get("labels", [])])
                 return f"""📋 Issue #{issue.get("number")}
 
 **Title**: {issue.get("title")}

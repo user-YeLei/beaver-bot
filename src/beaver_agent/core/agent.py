@@ -383,10 +383,10 @@ Always provide actionable suggestions."""
             if len(lines) > 35:
                 # Try to find error/warning patterns
                 error_lines = [
-                    l
-                    for l in lines
+                    line
+                    for line in lines
                     if any(
-                        k in l.lower()
+                        k in line.lower()
                         for k in ("error", "fail", "exception", "traceback", "warning", "warn")
                     )
                 ]
